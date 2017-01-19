@@ -26,7 +26,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/rakyll/hey/requester"
+	"github.com/nagae-memooff/hey/requester"
 )
 
 const (

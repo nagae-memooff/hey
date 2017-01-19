@@ -209,6 +209,10 @@ func (r *report) printHistogram() {
 			bi++
 		}
 	}
+
+	printLength := length(max)
+	histogramFmtString := "  %4.3f [%" + fmt.Sprintf("%d", printLength) + "d] |%v\n"
+
 	fmt.Printf("\nResponse time histogram:\n")
 	for i := 0; i < len(buckets); i++ {
 		// Normalize bar lengths.
@@ -216,7 +220,7 @@ func (r *report) printHistogram() {
 		if max > 0 {
 			barLen = (counts[i]*40 + max/2) / max
 		}
-		fmt.Printf("  %4.3f [%v]\t|%v\n", buckets[i], counts[i], strings.Repeat(barChar, barLen))
+		fmt.Printf(histogramFmtString, buckets[i], counts[i], strings.Repeat(barChar, barLen))
 	}
 }
 
@@ -233,4 +237,17 @@ func (r *report) printErrors() {
 	for err, num := range r.errorDist {
 		fmt.Printf("  [%d]\t%s\n", num, err)
 	}
+}
+
+func length(n int) (l int) {
+	l++
+	for {
+		if !(n < 10 && n >= 0) {
+			n = n / 10
+			l++
+		} else {
+			break
+		}
+	}
+	return
 }
