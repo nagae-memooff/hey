@@ -146,6 +146,12 @@ func (b *Work) Run() {
 }
 
 func (b *Work) makeRequest(c *http.Client) {
+	defer func() {
+		if err := recover(); err != nil {
+			// do nothing
+		}
+	}()
+
 	s := time.Now()
 	var size int64
 	var code int
