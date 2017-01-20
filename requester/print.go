@@ -29,6 +29,7 @@ type report struct {
 	avgTotal float64
 	fastest  float64
 	slowest  float64
+	demi_slowest  float64
 	average  float64
 	rps      float64
 
@@ -129,6 +130,7 @@ func (r *report) print() {
 		sort.Float64s(r.lats)
 		r.fastest = r.lats[0]
 		r.slowest = r.lats[len(r.lats)-1]
+		r.demi_slowest = r.lats[len(r.lats) * 99 / 100 -1]
 		fmt.Printf("\nSummary:\n")
 		fmt.Printf("  Total:\t%4.4f secs\n", r.total.Seconds())
 		fmt.Printf("  Slowest:\t%4.4f secs\n", r.slowest)
@@ -191,11 +193,14 @@ func (r *report) printHistogram() {
 	bc := 10
 	buckets := make([]float64, bc+1)
 	counts := make([]int, bc+1)
-	bs := (r.slowest - r.fastest) / float64(bc)
-	for i := 0; i < bc; i++ {
+	bs := (r.demi_slowest - r.fastest) / float64(bc)
+	for i := 0; i < bc-1; i++ {
 		buckets[i] = r.fastest + bs*float64(i)
 	}
+
+	buckets[bc-1] = r.demi_slowest
 	buckets[bc] = r.slowest
+
 	var bi int
 	var max int
 	for i := 0; i < len(r.lats); {
