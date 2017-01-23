@@ -89,7 +89,6 @@ type Work struct {
 
 // displayProgress outputs the displays until stopCh returns a value.
 func (b *Work) displayProgress(stopCh chan struct{}) {
-
 	var prev int
 	for {
 		select {
@@ -120,12 +119,7 @@ func (b *Work) Run() {
 
 	stopCh := make(chan struct{})
 
-	switch b.Output {
-	case "":
-		go b.displayProgress(stopCh)
-	case "csv":
-		go func() { <-stopCh }()
-	}
+	go b.displayProgress(stopCh)
 
 	start := time.Now()
 	c := make(chan os.Signal, 1)

@@ -16,6 +16,7 @@ package requester
 
 import (
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -23,6 +24,10 @@ import (
 
 const (
 	barChar = "∎"
+)
+
+var (
+	f *os.File
 )
 
 type report struct {
@@ -105,25 +110,33 @@ func (r *report) finalize() {
 }
 
 func (r *report) printCSV() {
-	fmt.Printf("response-time")
-	if r.trace {
-		fmt.Printf(",DNS+dialup,DNS,Request-write,Response-delay,Response-read")
+	var err error
+	csv_filename := fmt.Sprintf("log-%s.csv", time.Now().Format("2006-01-02-15:04:05"))
+	f, err = os.OpenFile(csv_filename, os.O_RDWR|os.O_CREATE, 0664)
+	defer f.Close()
+
+	if err != nil {
+		fmt.Printf("cant't open logfile %s: %s", csv_filename, err.Error())
 	}
-	fmt.Println()
+
+	write_to_file("response-time")
+	if r.trace {
+		write_to_file(",DNS+dialup,DNS,Request-write,Response-delay,Response-read")
+	}
+	write_to_file("\n")
 	for i, val := range r.lats {
-		fmt.Printf("%4.4f", val)
+		write_to_file("%4.4f", val)
 		if r.trace {
-			fmt.Printf(",%4.4f,%4.4f,%4.4f,%4.4f,%4.4f", r.connLats[i], r.dnsLats[i], r.reqLats[i],
+			write_to_file(",%4.4f,%4.4f,%4.4f,%4.4f,%4.4f", r.connLats[i], r.dnsLats[i], r.reqLats[i],
 				r.delayLats[i], r.resLats[i])
 		}
-		fmt.Println()
+		write_to_file("\n")
 	}
 }
 
 func (r *report) print() {
 	if r.output == "csv" {
 		r.printCSV()
-		return
 	}
 
 	if len(r.lats) > 0 {
@@ -260,4 +273,9 @@ func length(n int) (l int) {
 		}
 	}
 	return
+}
+
+func write_to_file(format string, args ...interface{}) {
+	line := fmt.Sprintf(format, args...)
+	f.WriteString(line)
 }
